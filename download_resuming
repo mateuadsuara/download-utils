@@ -1,0 +1,44 @@
+#!/bin/bash
+
+EXTRACT=$1
+
+DOWNLOADED_SUFFIX=".downloaded_url"
+
+while IFS=$'\n' read -r line; do
+  URL="$line"
+  FILENAME=`echo "${URL}" | rev | cut -d'/' -f1 | rev | urldecode`
+  if [ -f "$FILENAME$DOWNLOADED_SUFFIX" ]
+  then
+    echo "!WARNING! Skipping '$FILENAME'. Delete it if exists and the $DOWNLOADED_SUFFIX file to force downloading again."
+    PREV_URL=`cat "$FILENAME$DOWNLOADED_SUFFIX"`
+    if [ "$URL" == "$PREV_URL" ] ;then
+      echo "Same URL as previously downloaded:"
+      echo "$URL"
+    else
+      echo "DIFFERENT previous downloaded URL:"
+      echo "$PREV_URL"
+      echo "Current download URL:"
+      echo "$URL"
+    fi
+  else
+    wget --continue -O "$FILENAME" "$URL"
+    RESULT=$?
+
+    if [[ $RESULT -eq 0 ]]
+    then
+      touch "$FILENAME$DOWNLOADED_SUFFIX"
+      echo "$URL" > "$FILENAME$DOWNLOADED_SUFFIX"
+    fi
+  fi
+
+  if [[ -n "$EXTRACT" ]]
+  then
+    if [ -f "$FILENAME$DOWNLOADED_SUFFIX" ]
+    then
+      if [ -f "$FILENAME" ]
+      then
+        unzip -o "$FILENAME" && rm "$FILENAME" && echo "Deleted: $FILENAME"
+      fi
+    fi
+  fi
+done

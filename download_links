@@ -1,0 +1,3 @@
+#!/bin/bash
+
+select_links "$@" | download_resuming -x

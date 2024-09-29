@@ -1,0 +1,29 @@
+#!/bin/bash
+
+WEBSITE=$1
+shift 1
+
+ESCAPED_WEBSITE=$(printf '%s\n' "$WEBSITE" | sed -e 's/[\/&]/\\&/g')
+if [[ "$ESCAPED_WEBSITE" == */ ]]
+then
+  :
+else
+  ESCAPED_WEBSITE="$ESCAPED_WEBSITE\\/"
+fi
+
+while getopts g: flag
+do
+  case "${flag}" in
+    g) GREP=${OPTARG};;
+  esac
+done
+
+{
+  echo "== INSTRUCTIONS ==";
+  echo " Remove the # symbol at the beginning of the line for the links you want to select";
+  echo " (Links extracted from $WEBSITE)";
+  echo "==================";
+  wget -qO- $WEBSITE | extract_links | grep "$GREP";
+} |
+  sed 's/^/#/' | edit_output | grep ^[^#] |
+  extract_hrefs | sed "s/^/$ESCAPED_WEBSITE/g"

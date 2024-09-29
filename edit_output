@@ -1,0 +1,10 @@
+#!/bin/bash
+
+EDITOR=vi   # change to preferred editor as needed.
+TEMP_FILE=.$(basename "$0").$$
+
+cat > $TEMP_FILE
+if $EDITOR $TEMP_FILE < /dev/tty > /dev/tty 2>&1 ; then
+  cat $TEMP_FILE
+fi
+rm $TEMP_FILE
